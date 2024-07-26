@@ -1,5 +1,5 @@
 # kofa
-![Kofa Icon](imgs/kofa.png)
+![Kofa Icon](images/kofa.png)
 
 ## Purpose of this application
 To get quick voter suggestions on upcoming and current elections.
