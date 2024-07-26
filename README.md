@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# kofa
+![Kofa Icon](imgs/kofa.png)
 
-## Getting Started
+## Purpose of this application
+To get quick voter suggestions on upcoming and current elections.
 
-First, run the development server:
+## Summary
+I want to take my local ballot and use the app to make decisions on who to vote for.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Technology Stack
+- Auth: [Kinde](https://kinde.com/)
+- Frontend: [Next.js](https://nextjs.org/)
+- Backend: Next.js
+- Ballot API: [Civic Information API](https://developers.google.com/civic-information) | [Ballotpedia API](https://developer.ballotpedia.org/#elections)
+- AI Agent Framework: CrewAI
+- Database: PostgresSQL
+- Deployment: [Vercel](https://vercel.com/docs)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Products
+- Desktop App
+- API
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## User Story
+As a user I want too..
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+- Create a user profile.
+- Take a quiz that reveals voter preferences.
+- See a list of people to vote for based on voter registration address.
+- Be able to copy these choices as a cheatsheet to a notepad, download them as a pdf or share them on social media.
+- Save these choices to the user profile so they always appear when user logs in.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Future Features
+- Closest polling stations.
+- Access to previous year suggestions.
+- Real time election results.
+- Ability to chat with suggestions.
