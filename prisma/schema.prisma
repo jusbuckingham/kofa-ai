@@ -29,3 +29,11 @@ model Subscription {
   status     String   @default("inactive") // active, inactive, trial
   createdAt  DateTime @default(now())
 }
+
+model EmailLog {
+  id        String   @id @default(uuid())
+  userEmail String
+  subject   String
+  status    String   @default("sent") // sent, failed
+  createdAt DateTime @default(now())
+}

@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { NextApiRequest, NextApiResponse } from "next";
 import { getSession } from "next-auth/react";
 import { PrismaClient } from "@prisma/client";
+import { sendEmail } from "@/utils/email";
 
 const prisma = new PrismaClient();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -36,6 +37,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         userEmail: session.user.email,
         report: result,
       },
+    });
+
+    // Send AI Report via Email
+    await sendEmail(session.user.email, "Your AI Report is Ready", "aiReport", {
+      report: result,
     });
 
     return res.status(200).json({ result });

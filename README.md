@@ -1,5 +1,3 @@
-Here’s a README.md file for your updated Kofa.ai SaaS repo in Markdown:
-
 # Kofa.ai - AI-Powered Financial & Policy Platform  
 
 🚀 **Kofa.ai** is an AI-driven SaaS platform empowering **Black entrepreneurs, investors, and advocates** with **financial planning, policy analysis, and Web3 wealth-building tools**.  

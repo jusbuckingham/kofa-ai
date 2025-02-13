@@ -1,39 +1,36 @@
-import { useState } from "react";
-import { useRouter } from "next/router";
+import { NextApiRequest, NextApiResponse } from "next";
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
+import { sendEmail } from "@/utils/email";
 
-export default function Signup() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const router = useRouter();
+const prisma = new PrismaClient();
 
-  async function handleSignup(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!res.ok) {
-      setError("Signup failed. Email might be in use.");
-      return;
-    }
-
-    router.push("/auth/login");
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center">
-      <h2 className="text-2xl font-bold">Sign Up</h2>
-      <form onSubmit={handleSignup} className="flex flex-col space-y-4">
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" required />
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" required />
-        <button type="submit" className="bg-blue-600 text-white p-2 rounded">Sign Up</button>
-      </form>
-      {error && <p className="text-red-500">{error}</p>}
-    </div>
-  );
+  const { email, password } = req.body;
+
+  // Check if user already exists
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) {
+    return res.status(400).json({ error: "User already exists" });
+  }
+
+  // Hash password
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  // Create new user
+  const newUser = await prisma.user.create({
+    data: {
+      email,
+      password: hashedPassword,
+    },
+  });
+
+  // Send Welcome Email
+  await sendEmail(email, "Welcome to Kofa AI", "welcome", { name: email });
+
+  res.status(201).json({ message: "User created successfully" });
 }
