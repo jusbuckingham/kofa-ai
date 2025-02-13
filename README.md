@@ -1,50 +1,56 @@
-# Kofa.ai - AI-Powered Financial & Policy Platform  
+# Kofa.ai - AI-Powered Financial & Policy Platform
 
-🚀 **Kofa.ai** is an AI-driven SaaS platform empowering **Black entrepreneurs, investors, and advocates** with **financial planning, policy analysis, and Web3 wealth-building tools**.  
+🚀 **Kofa.ai** is an AI-driven SaaS platform empowering **Black entrepreneurs, investors, and advocates** with **financial planning, policy analysis, and Web3 wealth-building tools**.
 
 ## 📌 Features
+
 - **AI-Powered Business & Financial Tools**
-  - Automated **grant discovery & proposal generation**  
-  - AI-assisted **business plan & pitch deck creator**  
-  - Personalized **AI-driven wealth-building plans**  
+
+  - Automated **grant discovery & proposal generation**
+  - AI-assisted **business plan & pitch deck creator**
+  - Personalized **AI-driven wealth-building plans**
 
 - **Policy Research & Reparations Analysis**
-  - AI-generated **policy breakdowns & impact reports**  
-  - Automated **reparations & historical wealth data analysis**  
+
+  - AI-generated **policy breakdowns & impact reports**
+  - Automated **reparations & historical wealth data analysis**
 
 - **Web3 & Digital Asset Integration**
-  - AI-curated **Web3 investment insights**  
-  - Tokenized **real estate, businesses, and creative assets**  
+  - AI-curated **Web3 investment insights**
+  - Tokenized **real estate, businesses, and creative assets**
 
 ## 💻 Tech Stack
-| Component  | Tech  |
-|------------|----------------------|
-| **Frontend** | Next.js, Tailwind CSS |
-| **Backend** | Next.js API routes, Node.js |
-| **AI Engine** | OpenAI API (GPT-4-turbo) |
-| **Database** | PostgreSQL (Vercel/Postgres) |
-| **Authentication** | Kinde |
-| **Payments** | Stripe |
+
+| Component            | Tech                                       |
+| -------------------- | ------------------------------------------ |
+| **Frontend**         | Next.js, Tailwind CSS                      |
+| **Backend**          | Next.js API routes, Node.js                |
+| **AI Engine**        | OpenAI API (GPT-4-turbo)                   |
+| **Database**         | PostgreSQL (Vercel/Postgres)               |
+| **Authentication**   | Kinde                                      |
+| **Payments**         | Stripe                                     |
 | **Web3 Integration** | Solidity, Polygon/Ethereum Smart Contracts |
-| **Hosting** | Vercel |
+| **Hosting**          | Vercel                                     |
 
 ## 📂 Project Structure
 
 /kofa-ai
-├── public/               # Static assets
+├── public/ # Static assets
 ├── src/
-│   ├── components/       # Reusable UI components
-│   ├── pages/            # Next.js page routes
-│   ├── api/              # Backend API endpoints
-│   ├── utils/            # Helper functions
-│   ├── styles/           # Tailwind CSS styles
-│   ├── config/           # Environment & API configs
-├── .env.example          # Environment variables sample
-├── README.md             # Project documentation
-├── package.json          # Dependencies & scripts
+│ ├── components/ # Reusable UI components
+│ ├── pages/ # Next.js page routes
+│ ├── api/ # Backend API endpoints
+│ ├── utils/ # Helper functions
+│ ├── styles/ # Tailwind CSS styles
+│ ├── config/ # Environment & API configs
+├── .env.example # Environment variables sample
+├── README.md # Project documentation
+├── package.json # Dependencies & scripts
 
-## 🚀 Getting Started  
+## 🚀 Getting Started
+
 ### **1. Clone the Repository**
+
 ```sh
 git clone https://github.com/your-username/kofa-ai.git
 cd kofa-ai
@@ -98,3 +104,4 @@ This project is licensed under the MIT License.
 🔥 Let’s build AI-driven wealth & policy tools for the future!
 
 This README gives a **clear overview of the project, installation steps, tech stack, and roadmap**. Let me know if you’d like any modifications! 🚀
+```

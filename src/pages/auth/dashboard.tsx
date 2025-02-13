@@ -1,20 +1,20 @@
-import { useSession, signOut } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useSession, signOut } from 'next-auth/react'
+import { useState, useEffect } from 'react'
 
 export default function Dashboard() {
-  const { data: session, status } = useSession();
-  const [aiReports, setAiReports] = useState([]);
+  const { data: session, status } = useSession()
+  const [aiReports, setAiReports] = useState([])
 
   useEffect(() => {
     if (session) {
-      fetch("/api/reports")
+      fetch('/api/reports')
         .then((res) => res.json())
-        .then((data) => setAiReports(data.reports));
+        .then((data) => setAiReports(data.reports))
     }
-  }, [session]);
+  }, [session])
 
-  if (status === "loading") {
-    return <p>Loading...</p>;
+  if (status === 'loading') {
+    return <p>Loading...</p>
   }
 
   if (!session) {
@@ -28,7 +28,7 @@ export default function Dashboard() {
           Login
         </button>
       </div>
-    );
+    )
   }
 
   return (
@@ -42,7 +42,7 @@ export default function Dashboard() {
           <h2 className="text-xl font-semibold">Subscription Status</h2>
           <p className="text-green-600">Active</p>
           <button
-            onClick={() => window.location.href = "/api/stripe/checkout"}
+            onClick={() => (window.location.href = '/api/stripe/checkout')}
             className="mt-3 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
           >
             Upgrade Subscription
@@ -74,5 +74,5 @@ export default function Dashboard() {
         </button>
       </div>
     </div>
-  );
+  )
 }
