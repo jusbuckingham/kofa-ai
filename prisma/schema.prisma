@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // Change to "sqlite" or "mysql" if needed
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String?
+  email     String   @unique
+  password  String
+  role      String   @default("user") // Either "user" or "admin"
+  createdAt DateTime @default(now())
+}
+
+model AIReport {
+  id        String   @id @default(uuid())
+  userEmail String
+  report    String
+  createdAt DateTime @default(now())
+}
+
+model Subscription {
+  id         String   @id @default(uuid())
+  userEmail  String   @unique
+  status     String   @default("inactive") // active, inactive, trial
+  createdAt  DateTime @default(now())
+}

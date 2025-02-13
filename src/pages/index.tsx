@@ -46,7 +46,7 @@ export default function Home() {
         {/* AI Avatar with Animation */}
         <div className="relative w-32 h-32 mx-auto">
           <Image 
-            src="/Black-Polymath.svg" 
+            src="/Black-Polymath.jpg" 
             alt="Kofa AI Logo" 
             width={128} 
             height={128} 
