@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // Change to "sqlite" or "mysql" if needed
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -24,16 +24,17 @@ model AIReport {
 }
 
 model Subscription {
-  id         String   @id @default(uuid())
-  userEmail  String   @unique
-  status     String   @default("inactive") // active, inactive, trial
-  createdAt  DateTime @default(now())
+  id        String   @id @default(uuid())
+  userEmail String   @unique
+  status    String   @default("inactive") // active, inactive, trial
+  createdAt DateTime @default(now())
 }
 
 model EmailLog {
   id        String   @id @default(uuid())
   userEmail String
   subject   String
-  status    String   @default("sent") // sent, failed
+  status    String   @default("sent")
+  clicked   Boolean  @default(false) // New field for tracking clicks
   createdAt DateTime @default(now())
 }
