@@ -12,6 +12,7 @@
   "dependencies": {
     "@kinde-oss/kinde-auth-nextjs": "^2.5.0",
     "@next-auth/prisma-adapter": "^1.0.7",
+    "@stripe/stripe-js": "^5.6.0",
     "autoprefixer": "^10.4.20",
     "bcrypt": "^5.1.1",
     "ethers": "^6.6.1",
