@@ -1,7 +1,16 @@
+import Stripe from "stripe";
+import { NextApiRequest, NextApiResponse } from "next";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2023-10-16",
+});
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log("Incoming request:", req.body);
-  
-  if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
+  console.log("Incoming request body:", req.body);
+
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method Not Allowed" });
+  }
 
   try {
     const { priceType, userEmail } = req.body;
@@ -33,10 +42,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         priceId = process.env.NEXT_PUBLIC_STRIPE_PRO_ONE_TIME;
         break;
       default:
-        return res.status(400).json({ error: "Invalid price type" });
+        console.error("🚨 Invalid price type received:", priceType);
+        return res.status(400).json({ error: "Invalid price type. Check your environment variables." });
     }
 
     if (!priceId) {
+      console.error("🚨 Missing price ID in environment variables.");
       return res.status(400).json({ error: "Invalid price ID. Check your environment variables." });
     }
 
@@ -51,11 +62,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/cancel`,
     });
 
-    console.log("Stripe session created:", session.id);
+    console.log("✅ Stripe session created:", session.id);
 
     res.status(200).json({ sessionId: session.id });
   } catch (error) {
-    console.error("Stripe error:", error);
+    console.error("🔥 Stripe API Error:", error);
     res.status(500).json({ error: "Could not create Stripe session" });
   }
 }
