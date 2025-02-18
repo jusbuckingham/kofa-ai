@@ -1,39 +1,73 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcrypt'
-import { sendEmail } from '@/utils/email'
+import { useState } from "react";
+import { useRouter } from "next/router";
 
-const prisma = new PrismaClient()
+export default function SignupPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' })
-  }
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-  const { email, password } = req.body
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-  // Check if user already exists
-  const existingUser = await prisma.user.findUnique({ where: { email } })
-  if (existingUser) {
-    return res.status(400).json({ error: 'User already exists' })
-  }
+      const data = await res.json();
 
-  // Hash password
-  const hashedPassword = await bcrypt.hash(password, 10)
+      if (!res.ok) {
+        throw new Error(data.error || "Something went wrong");
+      }
 
-  // Create new user
-  const newUser = await prisma.user.create({
-    data: {
-      email,
-      password: hashedPassword,
-    },
-  })
+      alert("Signup successful! You can now log in.");
+      router.push("/auth/login");
+    } catch (err: any) {
+      setError(err.message);
+    }
 
-  // Send Welcome Email
-  await sendEmail(email, 'Welcome to Kofa AI', 'welcome', { name: email })
+    setLoading(false);
+  };
 
-  res.status(201).json({ message: 'User created successfully' })
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
+      <h1 className="text-3xl font-bold mb-6">Sign Up</h1>
+      <form onSubmit={handleSignup} className="bg-white p-6 rounded-lg shadow-lg w-96">
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        <div className="mb-4">
+          <label className="block text-gray-700">Email</label>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded mt-1"
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Password</label>
+          <input
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded mt-1"
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white p-2 rounded"
+          disabled={loading}
+        >
+          {loading ? "Signing up..." : "Sign Up"}
+        </button>
+      </form>
+    </div>
+  );
 }

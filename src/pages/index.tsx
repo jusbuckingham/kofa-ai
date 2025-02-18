@@ -1,45 +1,46 @@
-import { useState } from 'react'
-import Image from 'next/image'
+import { useState } from "react";
+import Image from "next/image";
 
 export default function Home() {
-  const [prompt, setPrompt] = useState('')
-  const [response, setResponse] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [prompt, setPrompt] = useState<string>("");
+  const [response, setResponse] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-    setResponse('')
+  // Define prompts with correct typing
+  const prompts: Record<string, string> = {
+    "Business Grant Finder":
+      "List grants available for Black entrepreneurs in 2024 and how to apply.",
+    "Wealth Planning AI":
+      "Provide a step-by-step wealth-building plan for a Black business owner.",
+    "Policy Breakdown":
+      "Summarize the latest federal policies affecting Black businesses.",
+  };
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setResponse("");
 
     try {
-      const res = await fetch('/api/openai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/openai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
-      })
+      });
 
       if (!res.ok) {
-        throw new Error('Failed to fetch AI response. Please try again.')
+        throw new Error("Failed to fetch AI response. Please try again.");
       }
 
-      const data = await res.json()
-      setResponse(data.result || 'No response received.')
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.')
+      const data = await res.json();
+      setResponse(data.result || "No response received.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-
-  const prompts = {
-    'Business Grant Finder':
-      'List grants available for Black entrepreneurs in 2024 and how to apply.',
-    'Wealth Planning AI':
-      'Provide a step-by-step wealth-building plan for a Black business owner.',
-    'Policy Breakdown':
-      'Summarize the latest federal policies affecting Black businesses.',
   }
 
   return (
@@ -52,7 +53,7 @@ export default function Home() {
             alt="Kofa AI Logo"
             width={128}
             height={128}
-            className={`transition-transform ${loading ? 'animate-spin-slow' : ''}`}
+            className={`transition-transform ${loading ? "animate-spin-slow" : ""}`}
           />
         </div>
 
@@ -65,11 +66,12 @@ export default function Home() {
 
         {/* Preset Prompts */}
         <div className="flex flex-wrap justify-center gap-3 mt-6">
-          {Object.keys(prompts).map((key) => (
+          {Object.entries(prompts).map(([key, value]) => (
             <button
               key={key}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              onClick={() => setPrompt(prompts[key])}
+              onClick={() => setPrompt(value)}
+              disabled={loading}
             >
               {key}
             </button>
@@ -84,13 +86,18 @@ export default function Home() {
             placeholder="Type your question or select a preset..."
             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             rows={4}
+            disabled={loading}
           />
           <button
             type="submit"
-            className={`w-full py-3 text-white font-semibold rounded-lg ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
+            className={`w-full py-3 text-white font-semibold rounded-lg ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-700"
+            }`}
             disabled={loading}
           >
-            {loading ? 'Processing...' : 'Get AI Insight'}
+            {loading ? "Processing..." : "Get AI Insight"}
           </button>
         </form>
 
@@ -110,5 +117,5 @@ export default function Home() {
         )}
       </div>
     </div>
-  )
+  );
 }

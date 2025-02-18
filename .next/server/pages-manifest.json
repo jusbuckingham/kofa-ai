@@ -2,6 +2,11 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
+  "/auth/login": "pages/auth/login.js",
+  "/auth/signup": "pages/auth/signup.js",
+  "/api/auth/[...nextauth]": "pages/api/auth/[...nextauth].js",
+  "/admin": "pages/admin.js",
   "/pricing": "pages/pricing.js",
-  "/api/stripe/checkout": "pages/api/stripe/checkout.js"
+  "/api/stripe/checkout": "pages/api/stripe/checkout.js",
+  "/dashboard": "pages/dashboard.js"
 }

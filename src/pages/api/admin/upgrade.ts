@@ -1,24 +1,25 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import { getSession } from 'next-auth/react'
-import { PrismaClient } from '@prisma/client'
+import { NextApiRequest, NextApiResponse } from "next";
+import { prisma } from "@/utils/prisma";
+import { getSession } from "next-auth/react";
 
-const prisma = new PrismaClient()
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const session = await getSession({ req });
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  const session = await getSession({ req })
-
-  if (!session || session.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Unauthorized' })
+  if (!session || (session.user as any)?.role !== "admin") {
+    return res.status(403).json({ error: "Unauthorized" });
   }
 
-  const { email } = req.body
-  await prisma.user.update({
-    where: { email },
-    data: { role: 'admin' },
-  })
+  try {
+    const { email, newRole } = req.body;
 
-  res.json({ success: true })
+    await prisma.user.update({
+      where: { email },
+      data: { role: newRole },
+    });
+
+    res.status(200).json({ message: "User role updated successfully" });
+  } catch (error) {
+    console.error("Error upgrading user:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 }

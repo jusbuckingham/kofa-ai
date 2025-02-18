@@ -1,30 +1,32 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { prisma } from "@/utils/prisma";
 import { getSession } from "next-auth/react";
-import { PrismaClient } from "@prisma/client";
 import { sendEmail } from "@/utils/email";
-
-const prisma = new PrismaClient();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getSession({ req });
 
-  if (!session || session.user.role !== "admin") {
+  if (!session || (session.user as any)?.role !== "admin") {
     return res.status(403).json({ error: "Unauthorized" });
   }
 
   const { email, status } = req.body;
 
-  await prisma.subscription.upsert({
-    where: { userEmail: email },
-    update: { status },
-    create: { userEmail: email, status },
-  });
+  try {
+    await prisma.subscription.update({
+      where: { userEmail: email },
+      data: { status },
+    });
 
-  // Send Subscription Notification Email
-  await sendEmail(email, `Subscription ${status}`, "subscription", {
-    status,
-    message: status === "active" ? "full access to Kofa AI's features." : "limited access.",
-  });
+    await sendEmail(
+      email,
+      `Subscription ${status}`,
+      `Your subscription status has been updated to ${status}.`
+    );
 
-  res.json({ success: true });
+    res.status(200).json({ message: "Subscription updated successfully" });
+  } catch (error) {
+    console.error("Error updating subscription:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 }

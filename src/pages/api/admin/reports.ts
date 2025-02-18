@@ -1,22 +1,23 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import { getSession } from 'next-auth/react'
-import { PrismaClient } from '@prisma/client'
+import { NextApiRequest, NextApiResponse } from "next";
+import { prisma } from "@/utils/prisma";
+import { getSession } from "next-auth/react";
 
-const prisma = new PrismaClient()
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const session = await getSession({ req });
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  const session = await getSession({ req })
-  if (!session) {
-    return res.status(401).json({ error: 'Unauthorized' })
+  if (!session?.user?.email) {
+    return res.status(403).json({ error: "Unauthorized" });
   }
 
-  const reports = await prisma.aiReport.findMany({
-    where: { userEmail: session.user.email },
-    select: { report: true },
-  })
+  try {
+    const reports = await prisma.report.findMany({
+      where: { userEmail: session.user.email },
+      orderBy: { createdAt: "desc" },
+    });
 
-  res.json({ reports })
+    res.status(200).json({ reports });
+  } catch (error) {
+    console.error("Error fetching reports:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 }

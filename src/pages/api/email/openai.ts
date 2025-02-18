@@ -1,54 +1,32 @@
-import OpenAI from 'openai'
-import { NextApiRequest, NextApiResponse } from 'next'
-import { getSession } from 'next-auth/react'
-import { PrismaClient } from '@prisma/client'
-import { sendEmail } from '@/utils/email'
+import { NextApiRequest, NextApiResponse } from "next";
+import { getSession } from "next-auth/react";
+import OpenAI from "openai";
+import { sendEmail } from "@/utils/email";
 
-const prisma = new PrismaClient()
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' })
-  }
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const session = await getSession({ req });
 
-  const session = await getSession({ req })
-  if (!session) {
-    return res.status(401).json({ error: 'Unauthorized' })
-  }
-
-  const { prompt } = req.body
-  if (!prompt) {
-    return res.status(400).json({ error: 'Prompt is required' })
+  if (!session || !session.user?.email) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
   try {
-    const response = await openai.Completions.create({
-      model: 'gpt-4-turbo',
-      prompt,
-      max_tokens: 500,
-    })
+    const response = await openai.completions.create({
+      model: "text-davinci-003",
+      prompt: "Generate an AI report based on user input...",
+      max_tokens: 150,
+    });
 
-    const result = response.choices[0].text
+    const result = response.choices[0].text.trim();
 
-    // Save the AI report to the database
-    await prisma.aiReport.create({
-      data: {
-        userEmail: session.user.email,
-        report: result,
-      },
-    })
+    await sendEmail(session.user.email, "Your AI Report is Ready", `Here is your AI report: ${result}`);
 
-    // Send AI Report via Email
-    await sendEmail(session.user.email, 'Your AI Report is Ready', 'aiReport', {
-      report: result,
-    })
-
-    return res.status(200).json({ result })
+    res.status(200).json({ message: "Email sent successfully" });
   } catch (error) {
-    return res.status(500).json({ error: 'AI request failed', details: error })
+    res.status(500).json({ error: "Error generating AI report" });
   }
 }

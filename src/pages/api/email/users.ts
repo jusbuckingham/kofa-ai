@@ -1,21 +1,24 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import { getSession } from 'next-auth/react'
-import { PrismaClient } from '@prisma/client'
+import { NextApiRequest, NextApiResponse } from "next";
+import { getSession } from "next-auth/react";
+import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  const session = await getSession({ req })
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const session = await getSession({ req });
 
-  if (!session || session.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Unauthorized' })
+  if (!session || !session.user?.email) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const users = await prisma.user.findMany({
-    select: { id: true, email: true, role: true },
-  })
-  res.json({ users })
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+  });
+
+  if (!user || (user as any).role !== "admin") {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+
+  const users = await prisma.user.findMany();
+  res.status(200).json(users);
 }

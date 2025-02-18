@@ -1,34 +1,29 @@
-import nodemailer from 'nodemailer'
-import { loadTemplate } from './emailTemplates'
+import nodemailer from "nodemailer";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_SERVER_HOST,
-  port: Number(process.env.EMAIL_SERVER_PORT),
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_SERVER_USER,
-    pass: process.env.EMAIL_SERVER_PASSWORD,
-  },
-})
+export async function sendEmail(to: string, subject: string, text: string) {
+  const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_SERVER_HOST,
+    port: Number(process.env.EMAIL_SERVER_PORT) || 587,
+    secure: process.env.EMAIL_SERVER_PORT === "465",
+    auth: {
+      user: process.env.EMAIL_SERVER_USER,
+      pass: process.env.EMAIL_SERVER_PASSWORD,
+    },
+  });
 
-export async function sendEmail(
-  to: string,
-  subject: string,
-  templateName: string,
-  data: Record<string, any>
-) {
+  const mailOptions = {
+    from: process.env.EMAIL_FROM,
+    to,
+    subject,
+    text,
+  };
+
   try {
-    const html = loadTemplate(templateName, data)
-
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
-      to,
-      subject,
-      html,
-    })
-
-    console.log(`📧 Email sent to ${to}`)
+    await transporter.sendMail(mailOptions);
+    console.log(`📩 Email sent to ${to}: ${subject}`);
+    return { success: true };
   } catch (error) {
-    console.error('❌ Email sending failed:', error)
+    console.error("❌ Email sending failed:", error);
+    return { success: false, error };
   }
 }

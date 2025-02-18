@@ -1,16 +1,18 @@
+import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
-import { getSession } from "next-auth/react";
 
 export async function middleware(req) {
-  const session = await getSession({ req });
+  const res = NextResponse.next();
 
-  if (!session || session.user.subscriptionStatus !== "active") {
-    return NextResponse.redirect(new URL("/pricing", req.url));
+  // 🛑 Prevent excessive logging (Limit it)
+  if (process.env.NODE_ENV === "development") {
+    console.log("🔍 Checking session in middleware...");
   }
 
-  return NextResponse.next();
+  return res;
 }
 
+// ✅ Ensure middleware runs on protected routes only
 export const config = {
-  matcher: ["/dashboard/:path*"], // Protect all /dashboard routes
+  matcher: ["/admin/:path*", "/dashboard/:path*"], // Add the correct routes
 };

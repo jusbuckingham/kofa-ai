@@ -1,23 +1,30 @@
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+
+interface UserAnalytics {
+  email: string;
+  role: string;
+  reportsGenerated: number;
+  subscriptionStatus: string;
+}
 
 export default function AdminDashboard() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
-  const [userAnalytics, setUserAnalytics] = useState([])
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [userAnalytics, setUserAnalytics] = useState<UserAnalytics[]>([]);
 
   useEffect(() => {
-    if (status === 'unauthenticated' || session?.user.role !== 'admin') {
-      router.push('/')
+    if (status === "unauthenticated" || (session?.user as any)?.role !== "admin") {
+      router.push("/");
     } else {
-      fetch('/api/admin/analytics')
+      fetch("/api/admin/analytics")
         .then((res) => res.json())
-        .then((data) => setUserAnalytics(data.userAnalytics))
+        .then((data) => setUserAnalytics(data.userAnalytics));
     }
-  }, [status, session, router]) // ✅ Added `router` to dependencies
+  }, [status, session, router]);
 
-  if (status === 'loading') return <p>Loading...</p>
+  if (status === "loading") return <p>Loading...</p>;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gray-50">
@@ -34,27 +41,17 @@ export default function AdminDashboard() {
                 <th className="border border-gray-200 px-4 py-2">Email</th>
                 <th className="border border-gray-200 px-4 py-2">Role</th>
                 <th className="border border-gray-200 px-4 py-2">AI Reports</th>
-                <th className="border border-gray-200 px-4 py-2">
-                  Subscription
-                </th>
+                <th className="border border-gray-200 px-4 py-2">Subscription</th>
               </tr>
             </thead>
             <tbody>
               {userAnalytics.map((user) => (
                 <tr key={user.email}>
-                  <td className="border border-gray-200 px-4 py-2">
-                    {user.email}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2">
-                    {user.role}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2">
-                    {user.reportsGenerated}
-                  </td>
-                  <td
-                    className={`border border-gray-200 px-4 py-2 
-                    ${user.subscriptionStatus === 'active' ? 'text-green-600' : 'text-red-600'}`}
-                  >
+                  <td className="border border-gray-200 px-4 py-2">{user.email}</td>
+                  <td className="border border-gray-200 px-4 py-2">{user.role}</td>
+                  <td className="border border-gray-200 px-4 py-2">{user.reportsGenerated}</td>
+                  <td className={`border border-gray-200 px-4 py-2 
+                    ${user.subscriptionStatus === "active" ? "text-green-600" : "text-red-600"}`}>
                     {user.subscriptionStatus}
                   </td>
                 </tr>
@@ -64,5 +61,5 @@ export default function AdminDashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }

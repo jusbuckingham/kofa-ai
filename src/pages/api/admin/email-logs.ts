@@ -1,22 +1,22 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import { getSession } from 'next-auth/react'
-import { PrismaClient } from '@prisma/client'
+import { NextApiRequest, NextApiResponse } from "next";
+import { prisma } from "@/utils/prisma";
+import { getSession } from "next-auth/react";
 
-const prisma = new PrismaClient()
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const session = await getSession({ req });
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  const session = await getSession({ req })
-
-  if (!session || session.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Unauthorized' })
+  if (!session || (session.user as any)?.role !== "admin") {
+    return res.status(403).json({ error: "Unauthorized" });
   }
 
-  const emailLogs = await prisma.emailLog.findMany({
-    orderBy: { createdAt: 'desc' },
-  })
+  try {
+    const logs = await prisma.emailLog.findMany({
+      orderBy: { createdAt: "desc" },
+    });
 
-  res.json({ emailLogs })
+    res.status(200).json({ logs });
+  } catch (error) {
+    console.error("Error fetching email logs:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 }

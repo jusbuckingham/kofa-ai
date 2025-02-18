@@ -1,25 +1,46 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import Stripe from "stripe";
+import { Stripe } from "stripe";
+import getRawBody from "raw-body"; // ✅ Replace 'micro' with 'raw-body'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2023-10-16",
+  apiVersion: "2025-01-27.acacia",
 });
 
+export const config = {
+  api: {
+    bodyParser: false, // ✅ Required for raw-body handling
+  },
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const sig = req.headers["stripe-signature"] as string;
-  let event;
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method Not Allowed" });
+  }
+
+  const sig = req.headers["stripe-signature"];
+
+  if (!sig) {
+    return res.status(400).json({ error: "Missing Stripe signature" });
+  }
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
-  } catch (err) {
-    return res.status(400).send(`Webhook Error: ${err}`);
-  }
+    const buf = await getRawBody(req);
+    const event = stripe.webhooks.constructEvent(buf, sig, process.env.STRIPE_WEBHOOK_SECRET!);
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
-    console.log(`User ${session.customer_email} subscribed!`);
-    // TODO: Update user's subscription status in DB
-  }
+    switch (event.type) {
+      case "checkout.session.completed":
+        console.log("✅ Payment successful:", event.data.object);
+        break;
+      case "invoice.payment_failed":
+        console.log("❌ Payment failed:", event.data.object);
+        break;
+      default:
+        console.log("Unhandled event type:", event.type);
+    }
 
-  res.status(200).json({ received: true });
+    res.status(200).json({ received: true });
+  } catch (error) {
+    console.error("Stripe webhook error:", error);
+    res.status(400).json({ error: "Webhook handling failed" });
+  }
 }
