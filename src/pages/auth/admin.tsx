@@ -2,29 +2,26 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
-export default function AdminAuth() {
+export default function AdminPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
+  console.log("🔍 Debug: session object →", session); // ✅ Check what session contains
+
   useEffect(() => {
-    if (
-      status === "authenticated" &&
-      (!session?.user || (session.user as any)?.role !== "admin")
-    ) {
-      router.push("/");
+    if (status === "loading") return; // Wait until session is loaded
+    if (!session || session.user.role !== "admin") {
+      router.push("/"); // Redirect unauthorized users
     }
   }, [status, session, router]);
 
   if (status === "loading") return <p>Loading...</p>;
-
-  if (!session?.user || (session.user as any)?.role !== "admin") {
-    return <p className="text-red-600">Unauthorized: Admins Only</p>;
-  }
+  if (!session || session.user.role !== "admin") return <p>Unauthorized</p>;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gray-50">
-      <h1 className="text-3xl font-bold text-gray-900">Admin Access</h1>
-      <p className="text-gray-700">You have access to admin privileges.</p>
+    <div>
+      <h1>Admin Dashboard</h1>
+      <p>Welcome, {session.user.email}!</p>
     </div>
   );
 }

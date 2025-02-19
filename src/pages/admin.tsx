@@ -1,48 +1,28 @@
 import { useSession } from "next-auth/react";
-
-interface Log {
-  id: string;
-  userEmail: string;
-  subject: string;
-  status: string;
-  clicked: boolean;
-  createdAt: string;
-}
-
-const logs: Log[] = []; // Replace with actual logs from database
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 export default function AdminPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-  if (!session?.user || (session.user as any).role !== "admin") {
+  useEffect(() => {
+    if (status === "loading") return; // Wait for session to load
+    if (!session || session.user?.role !== "admin") {
+      router.push("/auth/signin"); // Redirect to sign-in if not admin
+    }
+  }, [status, session, router]);
+
+  if (status === "loading") return <p>Loading...</p>;
+
+  if (!session || session.user?.role !== "admin") {
     return <p>Unauthorized</p>;
   }
 
   return (
     <div>
       <h1>Admin Dashboard</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>User Email</th>
-            <th>Subject</th>
-            <th>Status</th>
-            <th>Clicked</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {logs.map((log) => (
-            <tr key={log.id}>
-              <td>{log.userEmail}</td>
-              <td>{log.subject}</td>
-              <td>{log.status}</td>
-              <td>{log.clicked ? "Yes" : "No"}</td>
-              <td>{new Date(log.createdAt).toLocaleString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <p>Welcome, {session.user.email}!</p>
     </div>
   );
 }
