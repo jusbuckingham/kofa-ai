@@ -1,20 +1,26 @@
 import NextAuth, { AuthOptions, DefaultSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaClient, User as PrismaUser } from "@prisma/client"; // ✅ Import Prisma User type
+import { PrismaClient, User as PrismaUser } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
+// ✅ Prevent multiple Prisma client instances in dev
+const globalForPrisma = global as unknown as { prisma?: PrismaClient };
+export const prisma = globalForPrisma.prisma ?? new PrismaClient();
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
-// 🔹 Extend NextAuth User Type to Include `id` & `role`
+// ✅ Define CustomUser with role
+interface CustomUser extends PrismaUser {
+  role: string;
+}
+
+// ✅ Extend NextAuth types
 declare module "next-auth" {
-  interface User {
-    id: string;
-    email: string;
-    role: string;
-  }
-
   interface Session {
-    user: User & DefaultSession["user"];
+    user: {
+      id: string;
+      email: string;
+      role: string;
+    } & DefaultSession["user"];
   }
 
   interface JWT {
@@ -24,7 +30,8 @@ declare module "next-auth" {
   }
 }
 
-const authOptions: AuthOptions = {
+// ✅ Fix missing `authOptions` export
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -37,7 +44,7 @@ const authOptions: AuthOptions = {
           throw new Error("Missing email or password");
         }
 
-        // 🔹 Find user in the database
+        // ✅ Ensure user exists & check password
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
@@ -49,8 +56,8 @@ const authOptions: AuthOptions = {
         return {
           id: user.id,
           email: user.email,
-          role: user.role || "user",
-        };
+          role: (user as CustomUser).role || "user", // ✅ Ensure role is present
+        } as CustomUser;
       },
     }),
   ],
@@ -59,18 +66,15 @@ const authOptions: AuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      console.log("🔍 Debug: User before JWT →", user); // ✅ See user before setting token
       if (user) {
-        token.id = user.id;
-        token.email = user.email;
-        token.role = user.role || "user"; // ✅ Ensure role is stored
+        const u = user as CustomUser; // ✅ Ensure `role` exists
+        token.id = u.id;
+        token.role = u.role;
+        token.email = u.email;
       }
-      console.log("🔍 Debug: Token after JWT →", token); // ✅ See token contents
       return token;
     },
     async session({ session, token }) {
-      console.log("🔍 Debug: Token before session →", token); // ✅ Check what's inside token
-
       session.user = {
         id: token.id as string,
         email: token.email as string,
@@ -78,16 +82,14 @@ const authOptions: AuthOptions = {
         name: session.user?.name || null,
         image: session.user?.image || null,
       };
-
-      console.log("🔍 Debug: Session user →", session.user); // ✅ Confirm session user is set
-
       return session;
     },
   },
   session: {
-    strategy: "jwt", // ✅ Ensure we use JWT for session strategy
+    strategy: "jwt",
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
 
+// ✅ Correct export format
 export default NextAuth(authOptions);

@@ -6,30 +6,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  const { to, subject, text } = req.body;
+  const { email, subject, message } = req.body;
 
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_SERVER_HOST,
-    port: parseInt(process.env.EMAIL_SERVER_PORT!),
-    secure: true,
-    auth: {
-      user: process.env.EMAIL_SERVER_USER,
-      pass: process.env.EMAIL_SERVER_PASSWORD,
-    },
-  });
+  if (!email || !subject || !message) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
 
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
-      to,
-      subject,
-      text,
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
     });
 
-    console.log(`📩 Email sent to ${to}`);
-    res.status(200).json({ message: "Email sent successfully" });
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: subject,
+      text: message,
+    });
+
+    res.status(200).json({ success: "Email sent successfully" });
   } catch (error) {
-    console.error("❌ Email sending failed:", error);
+    console.error("🔴 Error sending email:", error);
     res.status(500).json({ error: "Email sending failed" });
   }
 }

@@ -1,18 +1,16 @@
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 
-export async function middleware(req) {
-  const res = NextResponse.next();
+export async function middleware(req: NextRequest) {
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-  // 🛑 Prevent excessive logging (Limit it)
-  if (process.env.NODE_ENV === "development") {
-    console.log("🔍 Checking session in middleware...");
+  if (!token) {
+    return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
-  return res;
+  return NextResponse.next();
 }
 
-// ✅ Ensure middleware runs on protected routes only
 export const config = {
-  matcher: ["/admin/:path*", "/dashboard/:path*"], // Add the correct routes
+  matcher: ["/admin/:path*", "/dashboard/:path*"], // ✅ Protect admin & dashboard routes
 };
