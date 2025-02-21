@@ -1,7 +1,13 @@
 import NextAuth, { AuthOptions, DefaultSession } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import { PrismaClient, User as PrismaUser } from '@prisma/client'
+import { PrismaClient, Prisma } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import dotenv from 'dotenv'
+
+dotenv.config() // ✅ Load .env variables
+
+// ✅ Correct Prisma User type
+type PrismaUser = Prisma.UserGetPayload<{}>
 
 // ✅ Prevent multiple Prisma client instances in dev
 const globalForPrisma = global as unknown as { prisma?: PrismaClient }
@@ -49,17 +55,14 @@ export const authOptions: AuthOptions = {
           where: { email: credentials.email },
         })
 
-        if (
-          !user ||
-          !(await bcrypt.compare(credentials.password, user.password))
-        ) {
+        if (!user || !(await bcrypt.compare(credentials.password, user.password))) {
           throw new Error('Invalid credentials')
         }
 
         return {
           id: user.id,
           email: user.email,
-          role: (user as CustomUser).role || 'user', // ✅ Ensure role is present
+          role: (user as PrismaUser).role || 'user', // ✅ Ensure role is present
         } as CustomUser
       },
     }),
