@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import nodemailer from 'nodemailer'
 
 export async function sendEmail(to: string, subject: string, text: string) {
   const transporter = nodemailer.createTransport({
@@ -9,7 +9,7 @@ export async function sendEmail(to: string, subject: string, text: string) {
       user: process.env.EMAIL_SERVER_USER,
       pass: process.env.EMAIL_SERVER_PASSWORD,
     },
-  });
+  })
 
   try {
     await transporter.sendMail({
@@ -17,9 +17,9 @@ export async function sendEmail(to: string, subject: string, text: string) {
       to,
       subject,
       text,
-    });
-    console.log(`📩 Email sent to ${to}`);
+    })
+    console.log(`📩 Email sent to ${to}`)
   } catch (error) {
-    console.error("❌ Email sending failed:", error);
+    console.error('❌ Email sending failed:', error)
   }
 }

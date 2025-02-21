@@ -1,7 +1,7 @@
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from 'next-auth/react'
 
 export default function Dashboard() {
-  const { data: session } = useSession();
+  const { data: session } = useSession()
 
   return (
     <div>
@@ -12,5 +12,5 @@ export default function Dashboard() {
         <button onClick={() => signIn()}>Sign In</button>
       )}
     </div>
-  );
+  )
 }
