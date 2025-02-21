@@ -1,15 +1,11 @@
 import js from '@eslint/js';
 import next from '@next/eslint-plugin-next';
-import prettier from 'eslint-plugin-prettier';
 
+/** @type {import('eslint').FlatConfig[]} */
 export default [
   js.configs.recommended,
   next.configs.recommended,
   {
-    plugins: {
-      '@next/next': next,  // ✅ Correct object format
-      prettier: prettier,  // ✅ Correct object format
-    },
     rules: {
       'prettier/prettier': 'error',
     },
