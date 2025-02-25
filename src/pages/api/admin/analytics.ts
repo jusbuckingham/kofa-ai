@@ -11,19 +11,20 @@ export default async function handler(
     return res.status(405).json({ error: 'Method Not Allowed' })
 
   try {
-    const users = await prisma.user.findMany()
+    const users = await prisma.user.findMany({
+      select: { id: true, email: true }, // ✅ Select both id & email
+    })
     const subscriptions = await prisma.subscription.findMany()
 
-    const userAnalytics = users.map((user: { email: string }) => ({
+    const userAnalytics = users.map((user) => ({
       email: user.email,
       subscriptionStatus:
-        subscriptions.find(
-          (sub: { userEmail: string }) => sub.userEmail === user.email
-        )?.status || 'inactive',
+        subscriptions.find((sub) => sub.userId === user.id)?.status || 'inactive',
     }))
 
     res.status(200).json({ userAnalytics })
   } catch (error) {
+    console.error('Error fetching analytics:', error) // ✅ Log error for debugging
     res.status(500).json({ error: 'Internal Server Error' })
   }
 }
