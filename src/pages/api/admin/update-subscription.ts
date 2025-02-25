@@ -14,8 +14,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Missing email or status' })
     }
 
-    const result = await prisma.subscription.updateMany({ // ✅ Use updateMany()
-      where: { userEmail: email },
+    // ✅ Ensure Prisma recognizes `userEmail`
+    const result = await prisma.subscription.updateMany({
+      where: { userEmail: email as string }, // ✅ Explicitly cast `email`
       data: { status },
     })
 
