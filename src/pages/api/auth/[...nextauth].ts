@@ -1,15 +1,15 @@
 import NextAuth, { AuthOptions, DefaultSession } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import { PrismaClient, Prisma } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
-
-// ✅ Correct Prisma User type (select only required fields)
-type PrismaUser = Prisma.UserGetPayload<{ select: { id: true; email: true; role: true } }>;
 
 // ✅ Prevent multiple Prisma client instances in dev
 const globalForPrisma = global as unknown as { prisma?: PrismaClient }
 export const prisma = globalForPrisma.prisma ?? new PrismaClient()
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+
+// ✅ Correct Prisma User Type (Dynamic)
+type PrismaUser = Awaited<ReturnType<typeof prisma.user.findUnique>>;
 
 // ✅ Define CustomUser with role
 type CustomUser = PrismaUser & { role: string };
@@ -18,16 +18,16 @@ type CustomUser = PrismaUser & { role: string };
 declare module 'next-auth' {
   interface Session {
     user: {
-      id: string;
-      email: string;
-      role: string;
-    } & DefaultSession['user'];
+      id: string
+      email: string
+      role: string
+    } & DefaultSession['user']
   }
 
   interface JWT {
-    id: string;
-    email: string;
-    role: string;
+    id: string
+    email: string
+    role: string
   }
 }
 

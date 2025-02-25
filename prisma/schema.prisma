@@ -7,34 +7,61 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// ✅ Enum for Role (Prevents accidental typos in DB)
+enum UserRole {
+  USER
+  ADMIN
+}
+
+/// ✅ Enum for Subscription Status
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  TRIAL
+}
+
 model User {
   id        String   @id @default(uuid())
   name      String?
   email     String   @unique
   password  String
-  role      String   @default("user") // Either "user" or "admin"
+  role      UserRole @default(USER) // ✅ Now an Enum (USER or ADMIN)
   createdAt DateTime @default(now())
+
+  // ✅ Establish relations
+  aiReports      AIReport[]
+  subscriptions  Subscription?
+  emailLogs      EmailLog[]
 }
 
 model AIReport {
   id        String   @id @default(uuid())
-  userEmail String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   report    String
   createdAt DateTime @default(now())
+
+  @@index([userId]) // ✅ Index for faster lookups
 }
 
 model Subscription {
   id        String   @id @default(uuid())
-  userEmail String   @unique
-  status    String   @default("inactive") // active, inactive, trial
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    SubscriptionStatus @default(INACTIVE) // ✅ Now an Enum
   createdAt DateTime @default(now())
+
+  @@index([userId]) // ✅ Index for lookups
 }
 
 model EmailLog {
   id        String   @id @default(uuid())
-  userEmail String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   subject   String
   status    String   @default("sent")
-  clicked   Boolean  @default(false) // New field for tracking clicks
+  clicked   Boolean  @default(false) // ✅ Tracks email interactions
   createdAt DateTime @default(now())
+
+  @@index([userId]) // ✅ Index for lookups
 }
