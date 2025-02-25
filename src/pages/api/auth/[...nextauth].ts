@@ -7,7 +7,7 @@ import dotenv from 'dotenv'
 dotenv.config() // ✅ Load .env variables
 
 // ✅ Correct Prisma User type
-type PrismaUser = Prisma.UserGetPayload<{}>
+type PrismaUser = PrismaClient['user']['findUnique'] extends (args: infer Args) => Promise<infer Result> ? Result : never;
 
 // ✅ Prevent multiple Prisma client instances in dev
 const globalForPrisma = global as unknown as { prisma?: PrismaClient }
