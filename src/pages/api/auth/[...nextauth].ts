@@ -2,12 +2,9 @@ import NextAuth, { AuthOptions, DefaultSession } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaClient, Prisma } from '@prisma/client'
 import bcrypt from 'bcryptjs'
-import dotenv from 'dotenv'
 
-dotenv.config() // ✅ Load .env variables
-
-// ✅ Correct Prisma User type
-type PrismaUser = PrismaClient['user']['findUnique'] extends (args: infer Args) => Promise<infer Result> ? Result : never;
+// ✅ Correct Prisma User type (select only required fields)
+type PrismaUser = Prisma.UserGetPayload<{ select: { id: true; email: true; role: true } }>;
 
 // ✅ Prevent multiple Prisma client instances in dev
 const globalForPrisma = global as unknown as { prisma?: PrismaClient }
@@ -15,24 +12,22 @@ export const prisma = globalForPrisma.prisma ?? new PrismaClient()
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 // ✅ Define CustomUser with role
-interface CustomUser extends PrismaUser {
-  role: string
-}
+type CustomUser = PrismaUser & { role: string };
 
 // ✅ Extend NextAuth types
 declare module 'next-auth' {
   interface Session {
     user: {
-      id: string
-      email: string
-      role: string
-    } & DefaultSession['user']
+      id: string;
+      email: string;
+      role: string;
+    } & DefaultSession['user'];
   }
 
   interface JWT {
-    id: string
-    email: string
-    role: string
+    id: string;
+    email: string;
+    role: string;
   }
 }
 
@@ -47,23 +42,24 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Missing email or password')
+          throw new Error('Missing email or password');
         }
 
         // ✅ Ensure user exists & check password
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
-        })
+          select: { id: true, email: true, role: true, password: true }, // Only fetch what's needed
+        });
 
         if (!user || !(await bcrypt.compare(credentials.password, user.password))) {
-          throw new Error('Invalid credentials')
+          throw new Error('Invalid credentials');
         }
 
         return {
           id: user.id,
           email: user.email,
-          role: (user as PrismaUser).role || 'user', // ✅ Ensure role is present
-        } as CustomUser
+          role: user.role ?? 'user', // ✅ Handle null role
+        } as CustomUser;
       },
     }),
   ],
@@ -73,12 +69,12 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        const u = user as CustomUser // ✅ Ensure `role` exists
-        token.id = u.id
-        token.role = u.role
-        token.email = u.email
+        const u = user as CustomUser;
+        token.id = u.id;
+        token.role = u.role;
+        token.email = u.email;
       }
-      return token
+      return token;
     },
     async session({ session, token }) {
       session.user = {
@@ -87,8 +83,8 @@ export const authOptions: AuthOptions = {
         role: token.role as string,
         name: session.user?.name || null,
         image: session.user?.image || null,
-      }
-      return session
+      };
+      return session;
     },
   },
   session: {
@@ -98,4 +94,4 @@ export const authOptions: AuthOptions = {
 }
 
 // ✅ Correct export format
-export default NextAuth(authOptions)
+export default NextAuth(authOptions);
