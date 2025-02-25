@@ -21,16 +21,16 @@ enum SubscriptionStatus {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String?
-  email     String   @unique
-  password  String
-  role      UserRole @default(USER) // ✅ Now an Enum (USER or ADMIN)
-  createdAt DateTime @default(now())
+  id             String        @id @default(uuid())
+  name           String?
+  email          String        @unique
+  password       String
+  role           String        @default("user") // Either "user" or "admin"
+  createdAt      DateTime      @default(now())
 
-  // ✅ Establish relations
+  // ✅ Define the relation properly
+  subscriptions  Subscription[] // A user can have multiple subscriptions
   aiReports      AIReport[]
-  subscriptions  Subscription?
   emailLogs      EmailLog[]
 }
 
@@ -45,13 +45,13 @@ model AIReport {
 }
 
 model Subscription {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status    SubscriptionStatus @default(INACTIVE) // ✅ Now an Enum
+  id        String  @id @default(uuid())
+  userId    String  @unique // ✅ Add a userId field to link it to a User
+  status    String  @default("inactive") // active, inactive, trial
   createdAt DateTime @default(now())
 
-  @@index([userId]) // ✅ Index for lookups
+  // ✅ Establish the relation
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model EmailLog {

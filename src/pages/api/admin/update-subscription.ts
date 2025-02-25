@@ -14,19 +14,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Missing email or status' })
     }
 
-    // ✅ Ensure Prisma recognizes `userEmail`
-    const result = await prisma.subscription.updateMany({
-      where: { userEmail: email as string }, // ✅ Explicitly cast `email`
+    // ✅ First, find the user's ID using their email
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true }
+    })
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    // ✅ Update subscription using `userId`
+    const result = await prisma.subscription.update({
+      where: { userId: user.id },
       data: { status },
     })
 
-    if (result.count === 0) {
-      return res.status(404).json({ error: 'Subscription not found' })
-    }
-
-    res.status(200).json({ message: 'Subscription updated successfully' })
+    res.status(200).json({ message: 'Subscription updated successfully', result })
   } catch (error) {
-    console.error('Error updating subscription:', error) // ✅ Debugging
+    console.error('Error updating subscription:', error)
     res.status(500).json({ error: 'Internal Server Error' })
   }
 }
