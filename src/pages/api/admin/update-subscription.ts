@@ -14,10 +14,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Missing email or status' })
     }
 
-    await prisma.subscription.update({
-      where: { userEmail: email as string }, // ✅ Explicitly cast `email`
+    const result = await prisma.subscription.updateMany({ // ✅ Use updateMany()
+      where: { userEmail: email },
       data: { status },
     })
+
+    if (result.count === 0) {
+      return res.status(404).json({ error: 'Subscription not found' })
+    }
 
     res.status(200).json({ message: 'Subscription updated successfully' })
   } catch (error) {
