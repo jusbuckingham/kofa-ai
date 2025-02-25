@@ -1,35 +1,27 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { prisma } from '@/utils/prisma'
-import { getSession } from 'next-auth/react'
-import { sendEmail } from '@/utils/email'
+import { PrismaClient } from '@prisma/client'
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  const session = await getSession({ req })
+const prisma = new PrismaClient()
 
-  if (!session || (session.user as any)?.role !== 'admin') {
-    return res.status(403).json({ error: 'Unauthorized' })
-  }
-
-  const { email, status } = req.body
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') 
+    return res.status(405).json({ error: 'Method Not Allowed' })
 
   try {
+    const { email, status } = req.body
+
+    if (!email || !status) {
+      return res.status(400).json({ error: 'Missing email or status' })
+    }
+
     await prisma.subscription.update({
-      where: { userEmail: email },
+      where: { userEmail: email as string }, // ✅ Explicitly cast `email`
       data: { status },
     })
 
-    await sendEmail(
-      email,
-      `Subscription ${status}`,
-      `Your subscription status has been updated to ${status}.`
-    )
-
     res.status(200).json({ message: 'Subscription updated successfully' })
   } catch (error) {
-    console.error('Error updating subscription:', error)
+    console.error('Error updating subscription:', error) // ✅ Debugging
     res.status(500).json({ error: 'Internal Server Error' })
   }
 }
